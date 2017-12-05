@@ -72,7 +72,6 @@ println("Created Validators for types in Meta Data = $validators")
 def columnNames = metaDataInfo[1]
 println ("Column Names = $columnNames")
 
-
 def jsonData = '''
 [
    ["Anand", 12, "one", "enjoys travel"],
@@ -106,6 +105,32 @@ def withDisplayOrder(data, Closure displayOrder = {-> [:]}) {
     }
 }
 
+roleColumnConfiguration = [
+    'admin': [],
+    'toto':  [4,3],
+    'foo':   [3,1,2],
+    'mooky': [3],
+]
+
+def forRole(data, String role) {
+    def columns = roleColumnConfiguration[role]
+    if(columns == null) {
+        return new JSONArray()
+    }
+
+    if(columns == []) {
+        return data
+    }
+
+    data.collect { JSONArray row ->
+        JSONArray newRow = new JSONArray()
+        columns.sort().each { wantedColumnIdx ->
+            newRow.put(row.get(wantedColumnIdx-1))
+        }
+        return newRow
+    }
+}
+
 JSONArray data = new JSONArray(jsonData)
 def validData = validate(data, validators)
 println("Valid Data = $validData")
@@ -114,9 +139,12 @@ def defaultOrder = withDisplayOrder(validData)
 println("Default Order Data = $defaultOrder")
 
 def newOrder = withDisplayOrder(validData) {
-    [1:1, 2:3, 3:4, 4:2]
+    [1:1, 2:3, 3:4, 4:2]  //New Column Order
 }
 println("New Order Data = $newOrder")
 
+def roleBasedData = forRole(newOrder, 'foo')
+println("Role Based Data = $roleBasedData")
+
 // TODO: SETUP PIPELINE LATER
-//data >> validate >> withDisplayOrder
+//data >> validate >> withDisplayOrder >> forRole
