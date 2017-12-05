@@ -47,23 +47,17 @@ class EmptyValidator {
 }
 
 
-def metaDataAndDataJson = '''
+def metaDataJson = '''
 [
-   [{"type" : ["string", 5]}, { "type" : ["integer", 3]}, {"type" : ["set", ["one", "two", "three"]]}, { "type" : ["string", -1] }],
-   ["name", "age", "likes", "description"],
-   ["Anand", 12, "one", "enjoys travel"],
-   ["Dhaval", 15, "two", "enjoys food"],
-   ["Shameer", 5, "three", "enjoys cars"],
-   ["Senthil", 50000, "four", "enjoys books"]
-]
-'''
+   [{"type" : ["string", 6]}, { "type" : ["integer", 2]}, {"type" : ["set", ["one", "two", "three"]]}, { "type" : ["string", -1] }],
+   ["name", "age", "likes", "description"]
+]'''
 
+println("Parsing Meta Data Json...")
+JSONArray metaDataInfo = new JSONArray(metaDataJson)
+println("Parsed MetaData Json!!")
 
-println("Parsing Json...")
-JSONArray json = new JSONArray(metaDataAndDataJson)
-println("Parsed Json!!")
-
-def types = json[0] as List
+def types = metaDataInfo[0] as List
 def validators = types.collect { type ->
     def (typeName, constraints) = type['type']
     switch (typeName) {
@@ -75,16 +69,54 @@ def validators = types.collect { type ->
 }
 
 println("Created Validators for types in Meta Data = $validators")
-
-def columnNames = json[1]
+def columnNames = metaDataInfo[1]
 println ("Column Names = $columnNames")
 
-def noOfRows = json.toList().size()
-//println(noOfRows)
-(2..(noOfRows-1)).each { rowIdx ->
-    def row = json.get(rowIdx)
-    println("row = $row")
-    row.eachWithIndex{ item, idx ->
-        println(validators[idx].validate(item))
+
+def jsonData = '''
+[
+   ["Anand", 12, "one", "enjoys travel"],
+   ["Dhaval", 10, "two", "enjoys food"],
+   ["Shameer", 35, "three", "enjoys cars"],
+   ["Senthil", 100, "four", "enjoys books"]
+]
+'''
+
+def validate(JSONArray data, validators) {
+    data.findAll { JSONArray row ->
+        row.withIndex().every { item, columnIdx ->
+            validators[columnIdx].validate(item)
+        }
     }
 }
+
+def withDisplayOrder(data, Closure displayOrder = {-> [:]}) {
+    data.collect { JSONArray row ->
+        def modifyDisplayOrder = displayOrder()
+        if(modifyDisplayOrder) {
+            JSONArray newRow = new JSONArray()
+            row.withIndex(1).each { item, columnIdx ->
+                newRow.put(modifyDisplayOrder[columnIdx] - 1, item)
+
+            }
+            return newRow
+        } else {
+            return row
+        }
+    }
+}
+
+JSONArray data = new JSONArray(jsonData)
+def validData = validate(data, validators)
+println("Valid Data = $validData")
+
+def defaultOrder = withDisplayOrder(validData)
+println("Default Order Data = $defaultOrder")
+
+def newOrder = withDisplayOrder(validData) {
+    [1:1, 2:3, 3:4, 4:2]
+}
+println("New Order Data = $newOrder")
+
+// TODO: SETUP PIPELINE LATER
+//data >> validate >> withDisplayOrder
