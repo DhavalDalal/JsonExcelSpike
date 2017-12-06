@@ -1,1 +1,0 @@
-CREATE TABLE sheets(name VARCHAR(20), data JSON);

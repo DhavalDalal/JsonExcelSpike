@@ -18,15 +18,19 @@ MysqldConfig config = aMysqldConfig(v5_7_latest)
 
 EmbeddedMysql mysqld = anEmbeddedMysql(config)
         .addSchema("test", classPathScripts("schema/*.sql"))
-//        .addSchema("test", classPathScript("schema/01_createTableWithJsonColumn.sql"))
+//        .addSchema("test", classPathScript("schema/01_createSheetsMetaDataAndSheetsTables.sql"))
         .start()
 
 println("Started...")
 def sql = Sql.newInstance("jdbc:mysql://localhost:3306/test", "dhaval", "", 'com.mysql.cj.jdbc.Driver')
 
 println("Executing query...")
+sql.eachRow("SELECT * FROM SHEETSMETADATA") { row ->
+    println "$row.id has name => $row.name and metadata => $row.metadata"
+}
+
 sql.eachRow("SELECT * FROM SHEETS") { row ->
-    println "$row.name has data => $row.data"
+    println "$row.id has data => $row.data"
 }
 
 println("Stopping Mysql...")
