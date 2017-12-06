@@ -8,6 +8,12 @@ project.ext {
     groovy = 'org.codehaus.groovy:groovy-all:2.4.11'
     logs = 'org.slf4j:slf4j-api:1.7.21'
     json = 'org.json:json:20171018'
+    wix = 'com.wix:wix-embedded-mysql:3.0.0'
+    mysqlJdbcDriver = 'mysql:mysql-connector-java:6.0.6'
+
+    // you will need this for marshalling and unmarshalling data from/to hibernate type
+    // hibernateJsonType = 'com.vladmihalcea:hibernate-types-52:1.2.0'
+    // See https://vladmihalcea.com/2016/06/20/how-to-map-json-objects-using-generic-hibernate-types/
 }
 
 repositories {
@@ -17,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    compile (project.ext.groovy, project.ext.logs, project.ext.json)
+    compile (project.ext.groovy, project.ext.logs, project.ext.json, project.ext.wix, project.ext.mysqlJdbcDriver)
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the
